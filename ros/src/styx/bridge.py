@@ -57,6 +57,38 @@ class Bridge(object):
                            for e in conf.publishers}
         self.prev_odometry_data = {}
 
+        # Limit the publishers to only publish at a certain rate.
+        # The publishing rate is given in Hz.  Of course, if the
+        # publisher is naturally publishing more slowly than this,
+        # the limitation will have no effect.
+        # If the publisher should not be limited, remove it from
+        # this list.  If the publisher should never publish, set
+        # the value to something small, say 0.001.
+        self.hz = {
+            # 'odometry': 10,
+            'controls': 1,
+            'obstacles': 1,
+            'lidar': 1,
+            'traffic': 1,
+            # 'dbw_status': 10,
+            'camera': .01,
+        }
+        self.last = {}
+
+    def too_soon(self, name):
+        if name not in self.hz:
+            return False
+        cur_time = rospy.get_time()
+        if name not in self.last:
+            self.last[name] = cur_time
+            return False
+        last_time = self.last[name]
+        dt = 1./self.hz[name]
+        if cur_time - last_time < dt:
+            return True
+        self.last[name] = cur_time
+        return False
+
     def create_light(self, x, y, z, yaw, state):
         light = TrafficLight()
 
@@ -127,6 +159,8 @@ class Bridge(object):
             "world")
 
     def publish_odometry(self, data):
+        if self.too_soon('odometry'):
+            return
         if data == self.prev_odometry_data:
             # pass
             return
@@ -145,6 +179,8 @@ class Bridge(object):
 
 
     def publish_controls(self, data):
+        if self.too_soon('controls'):
+            return
         steering, throttle, brake = data['steering_angle'], data['throttle'], data['brake']
         # rospy.loginfo("pub %f %f %f", steering, throttle, brake)
         self.publishers['steering_report'].publish(self.create_steer(steering))
@@ -152,6 +188,8 @@ class Bridge(object):
         self.publishers['brake_report'].publish(self.create_float(brake))
 
     def publish_obstacles(self, data):
+        if self.too_soon('obstacles'):
+            return
         for obs in data['obstacles']:
             pose = self.create_pose(obs[0], obs[1], obs[2])
             self.publishers['obstacle'].publish(pose)
@@ -162,9 +200,13 @@ class Bridge(object):
         self.publishers['obstacle_points'].publish(cloud)
 
     def publish_lidar(self, data):
+        if self.too_soon('lidar'):
+            return
         self.publishers['lidar'].publish(self.create_point_cloud_message(zip(data['lidar_x'], data['lidar_y'], data['lidar_z'])))
 
     def publish_traffic(self, data):
+        if self.too_soon('traffic'):
+            return
         x, y, z = data['light_pos_x'], data['light_pos_y'], data['light_pos_z'],
         yaw = [math.atan2(dy, dx) for dx, dy in zip(data['light_pos_dx'], data['light_pos_dy'])]
         status = data['light_state']
@@ -177,9 +219,13 @@ class Bridge(object):
         self.publishers['trafficlights'].publish(lights)
 
     def publish_dbw_status(self, data):
+        if self.too_soon('dbw_status'):
+            return
         self.publishers['dbw_status'].publish(Bool(data))
 
     def publish_camera(self, data):
+        if self.too_soon('camera'):
+            return
         imgString = data["image"]
         image = PIL_Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
