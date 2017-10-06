@@ -37,6 +37,7 @@ LOOKAHEAD_WPS = 240 # Number of waypoints we will publish.
 
 
 # takes geometry_msgs/Point
+# returns float 
 def point_dist_sq(a, b):
     dx = a.x-b.x
     dy = a.y-b.y
@@ -44,6 +45,7 @@ def point_dist_sq(a, b):
     return dx*dx+dy*dy+dz*dz
 
 # takes geometry_msgs/Point
+# returns float 
 def point_dist(a, b):
     return math.sqrt(point_dist_sq(a, b))
 
@@ -55,18 +57,20 @@ def waypoint_to_point(wp):
 
 # takes x and y position (floats)
 # returns geometry_msgs/Pose
-def point_to_pose(x, y):
-    pt = Point()
-    pt.x = x
-    pt.y = y
-    pose = Pose()
-    pose.position = pt
-    return pose
+#def point_to_pose(x, y):
+#    pt = Point()
+#    pt.x = x
+#    pt.y = y
+#    pose = Pose()
+#    pose.position = pt
+#    print (type(pose))
+#    return pose
 
 # takes styx_msgs/PoseStamp
 # returns geometry_msgs/Point
 def pose_to_point(pose):
     point = pose.pose.position
+    #print (type(point)) # <class 'geometry_msgs.msg._Point.Point'>
     return point
 
 # takes geometry_msgs/Point 
@@ -74,6 +78,8 @@ def pose_to_point(pose):
 def waypoints_to_vec(a, b):
     return (b.x-a.x, b.y-a.y)
 
+# takes tuple of two floats
+# returns float 
 def dot_prod(a, b):
     return a[0]*b[0]+a[1]*b[1]
 
