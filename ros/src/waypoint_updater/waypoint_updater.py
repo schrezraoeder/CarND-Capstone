@@ -485,9 +485,11 @@ class WaypointUpdater(object):
             #rospy.loginfo("stopped: %s displacement: %f", self.stopped, displacement)
 
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
-        ts = msg.header.stamp.secs + 1.e-9*msg.header.stamp.nsecs
-        dtime = datetime.datetime.fromtimestamp(ts)
-        dts = dtime.strftime("%H:%M:%S.%f")
+        print ('roll, pitch, yaw')
+        print (roll, pitch, yaw)
+        #ts = msg.header.stamp.secs + 1.e-9*msg.header.stamp.nsecs
+        #dtime = datetime.datetime.fromtimestamp(ts)
+        #dts = dtime.strftime("%H:%M:%S.%f")
         # near_pt is only used for testing
         # near_pt = self.nearest_waypoint(msg)
         next_pt = self.next_waypoint(msg)
@@ -574,7 +576,7 @@ class WaypointUpdater(object):
             ppt = waypoint_to_point(self.wps[i-1])
             d = point_dist(pt, ppt)
             self.avg_wp_dist += d
-        self.avg_wp_dist /= (len(self.wps) - 1) # added ()'s b/c the -1 wasn't in denominator
+        self.avg_wp_dist /= len(self.wps) 
 
         self.stopPlanner = stop_planner.StopPlanner()
         self.stopPlanner.getMap_s(self.wps)
