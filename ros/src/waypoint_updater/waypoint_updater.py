@@ -66,7 +66,7 @@ def waypoint_to_point(wp):
 #    print (type(pose))
 #    return pose
 
-# takes styx_msgs/PoseStamp
+# takes geometry_msgs/PoseStamped Message docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html 
 # returns geometry_msgs/Point
 def pose_to_point(pose):
     point = pose.pose.position
