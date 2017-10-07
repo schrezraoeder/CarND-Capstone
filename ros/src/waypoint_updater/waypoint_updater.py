@@ -461,13 +461,13 @@ class WaypointUpdater(object):
         if len(self.wps) == 0:
             return
         seq = msg.header.seq
-        print (msg.header.stamp) 
-        print (msg.header.stamp.secs) 
-        print (msg.header.stamp.nsecs)
-        if seq%1 != 0:
-            for i in range(1000):
-                print ('here')
-                print (seq)
+        #print (msg.header.stamp) 
+        #print (msg.header.stamp.secs) 
+        #print (msg.header.stamp.nsecs)
+        if seq%1 != 0: # testing that seq is an integer, okay....  wouldn't that always be true?
+            #for i in range(1000):
+            #    print ('here')
+            #    print (seq)
             return
         q = msg.pose.orientation
         xyz = msg.pose.position
@@ -569,12 +569,12 @@ class WaypointUpdater(object):
             prev_pt = cur_pt
 
         self.avg_wp_dist = 0.
-        for i in range(1, len(self.wps)):
+        for i in range(0, len(self.wps)): # range(1, ...)
             pt = waypoint_to_point(self.wps[i])
             ppt = waypoint_to_point(self.wps[i-1])
             d = point_dist(pt, ppt)
             self.avg_wp_dist += d
-        self.avg_wp_dist /= len(self.wps) - 1
+        self.avg_wp_dist /= (len(self.wps) - 1) # added ()'s b/c the -1 wasn't in denominator
 
         self.stopPlanner = stop_planner.StopPlanner()
         self.stopPlanner.getMap_s(self.wps)
