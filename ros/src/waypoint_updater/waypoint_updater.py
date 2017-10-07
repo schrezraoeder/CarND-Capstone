@@ -461,7 +461,13 @@ class WaypointUpdater(object):
         if len(self.wps) == 0:
             return
         seq = msg.header.seq
+        print (msg.header.stamp) 
+        print (msg.header.stamp.secs) 
+        print (msg.header.stamp.nsecs)
         if seq%1 != 0:
+            for i in range(1000):
+                print ('here')
+                print (seq)
             return
         q = msg.pose.orientation
         xyz = msg.pose.position
