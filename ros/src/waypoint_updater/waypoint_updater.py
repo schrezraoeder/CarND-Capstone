@@ -172,9 +172,9 @@ class WaypointUpdater(object):
                                     curstate='go_to_stop')
 
         
-        self.time_count = 0 #note: temporarily used in pose_cb, delete later 
-        self.original_time = 0 #note: temporarily used in pose_cb, delete later 
-        self.original_seq = 0 #note: temporarily used in pose_cb, delete later 
+        #self.time_count = 0 #note: temporarily used in pose_cb, delete later 
+        #self.original_time = 0 #note: temporarily used in pose_cb, delete later 
+        #self.original_seq = 0 #note: temporarily used in pose_cb, delete later 
         # TODO: Add other member variables you need below
 
         rospy.spin()
@@ -479,21 +479,25 @@ class WaypointUpdater(object):
         if self.pose_set == False:
             self.prev_pose = xyz
             self.pose_set = True
-            self.original_time = rospy.get_rostime() 
-            self.original_seq = seq 
+            #self.original_time = rospy.get_rostime() 
+            #self.original_seq = seq 
         else:
             displacement = point_dist(self.prev_pose, xyz)
             self.prev_pose = xyz
-            if displacement <= 1e-2:
+            if displacement <= 1e-2: # rostopic hz /current_pose 
+					#student@udacity:~$ rostopic hz -w 10 /current_pose
+					#subscribed to [/current_pose]
+					#average rate: 22.655
+					#min: 0.012s max: 0.089s std dev: 0.03330s window: 10
                 self.stopped = True
             else:
                 self.stopped = False
             #rospy.loginfo("stopped: %s displacement: %f", self.stopped, displacement)
 
-        self.time_count = rospy.get_rostime() 
-        if (self.time_count.secs - self.original_time.secs > 20):
-            for i_ in range(100):
-                print ((seq - self.original_seq) / (self.time_count.secs + self.time_count.nsecs*1e-9)) 
+        #self.time_count = rospy.get_rostime() 
+        #if (self.time_count.secs - self.original_time.secs > 20):
+        #    for i_ in range(100):
+        #        print ((seq - self.original_seq) / (self.time_count.secs + self.time_count.nsecs*1e-9)) 
         
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
         print ('roll, pitch, yaw')
