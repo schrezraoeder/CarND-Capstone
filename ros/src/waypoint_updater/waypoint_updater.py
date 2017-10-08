@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-import datetime
+#import datetime
 import tf.transformations
 from geometry_msgs.msg import PoseStamped, Point, Quaternion, TwistStamped
 from std_msgs.msg import Int32, Float32
@@ -78,7 +78,7 @@ def pose_to_point(pose):
 def waypoints_to_vec(a, b):
     return (b.x-a.x, b.y-a.y)
 
-# takes tuple of two floats
+# takes two floats
 # returns float 
 def dot_prod(a, b):
     return a[0]*b[0]+a[1]*b[1]
@@ -172,8 +172,9 @@ class WaypointUpdater(object):
                                     curstate='go_to_stop')
 
         
-
-        
+        self.time_count = 0 #note: temporarily used in pose_cb, delete later 
+        self.original_time = 0 #note: temporarily used in pose_cb, delete later 
+        self.original_seq = 0 #note: temporarily used in pose_cb, delete later 
         # TODO: Add other member variables you need below
 
         rospy.spin()
@@ -459,22 +460,27 @@ class WaypointUpdater(object):
         rospy.logwarn('state machine current state: %s', self.fsm.get_currentState())
 
         if len(self.wps) == 0:
+            
             return
         seq = msg.header.seq
         #print (msg.header.stamp) 
         #print (msg.header.stamp.secs) 
         #print (msg.header.stamp.nsecs)
-        if seq%1 != 0: # testing that seq is an integer, okay....  wouldn't that always be true?
-            #for i in range(1000):
-            #    print ('here')
-            #    print (seq)
-            return
+        #if seq%1 != 0: # testing that seq is an integer, okay....  wouldn't that always be true?
+        #    #for i in range(1000):
+        #    #    print ('here')
+        #    #    print (seq)
+        #    return
         q = msg.pose.orientation
         xyz = msg.pose.position
+        
+
 
         if self.pose_set == False:
             self.prev_pose = xyz
             self.pose_set = True
+            self.original_time = rospy.get_rostime() 
+            self.original_seq = seq 
         else:
             displacement = point_dist(self.prev_pose, xyz)
             self.prev_pose = xyz
@@ -484,6 +490,11 @@ class WaypointUpdater(object):
                 self.stopped = False
             #rospy.loginfo("stopped: %s displacement: %f", self.stopped, displacement)
 
+        self.time_count = rospy.get_rostime() 
+        if (self.time_count.secs - self.original_time.secs > 20):
+            for i_ in range(100):
+                print ((seq - self.original_seq) / (self.time_count.secs + self.time_count.nsecs*1e-9)) 
+        
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
         print ('roll, pitch, yaw')
         print (roll, pitch, yaw)
